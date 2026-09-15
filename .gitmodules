@@ -1,0 +1,7 @@
+[submodule "modules/momentum"]
+	path = modules/momentum
+	url = https://github.com/licphel/momentum
+
+[submodule "modules/launcher"]
+	path = modules/launcher
+	url = https://github.com/licphel/rf-launcher

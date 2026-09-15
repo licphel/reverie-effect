@@ -22,135 +22,24 @@
  * SOFTWARE.
  */
 
-import org.gradle.internal.os.OperatingSystem
-
-plugins {
-  id 'java-library'
-  id 'maven-publish'
-}
-
-group = 'net.fmhi'
-version = property('fmhi_version')
-
-ext {
-  switch (OperatingSystem.current()) {
-    case OperatingSystem.WINDOWS:
-      def osArch = System.getProperty("os.arch")
-      lwjglNatives = osArch.contains("64")
-          ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
-          : "natives-windows-x86"
-      break
-    case OperatingSystem.MAC_OS:
-      lwjglNatives = System.getProperty("os.arch").startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
-      break
-    default:
-      def osArch = System.getProperty("os.arch")
-      lwjglNatives = osArch.startsWith("arm") || osArch.startsWith("aarch64")
-          ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
-          : "natives-linux"
-      break
-  }
+allprojects {
+  group = 'io.viki.rf'
+  version = property('rf_version')
 }
 
 subprojects {
-  apply plugin: 'java-library'
-
-  java {
-    toolchain { languageVersion = JavaLanguageVersion.of(25) }
-    withJavadocJar()
-    withSourcesJar()
-  }
-
   repositories { mavenCentral() }
 
   tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
     it.options.compilerArgs.add("-Xlint:all")
-    it.options.compilerArgs.add("-Werror")
-  }
-
-  tasks.withType(Javadoc).configureEach {
-    options.addBooleanOption('Xdoclint:all,-missing,-html5', true)
-    failOnError = false
-  }
-
-  tasks.withType(Test).configureEach { useJUnitPlatform() }
-
-  // Shared dependencies, injected into every module from here so the
-  // per-module build scripts stay free of boilerplate.
-  dependencies {
-    compileOnly libs.jspecify
-    testCompileOnly libs.jspecify
-    implementation libs.log4j.api
-    implementation libs.log4j.core
-    implementation libs.fastutil
-    implementation libs.jackson.databind
   }
 }
 
-repositories { mavenCentral() }
-
-// All discovered subprojects get pulled into main + test classpaths.
-def allSubprojects = subprojects.collect { project(":${it.name}") }
-
-dependencies {
-  allSubprojects.each { implementation it }
-  allSubprojects.each { testImplementation it }
-
-  compileOnly libs.jspecify
-  testCompileOnly libs.jspecify
-
-  testImplementation platform('org.junit:junit-bom:5.10.0')
-  testImplementation 'org.junit.jupiter:junit-jupiter'
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-  // primitive-keyed collections: no boxing on the hot chunk lookup paths
-  implementation libs.fastutil
-
-  implementation "org.lwjgl:lwjgl:${lwjgl_version}"
-  implementation "org.lwjgl:lwjgl-opengl:${lwjgl_version}"
-  implementation "org.lwjgl:lwjgl-glfw:${lwjgl_version}"
-  implementation "org.lwjgl:lwjgl-openal:${lwjgl_version}"
-  implementation "org.lwjgl:lwjgl-shaderc:${lwjgl_version}"
-  implementation "org.lwjgl:lwjgl-spvc:${lwjgl_version}"
-  implementation "org.lwjgl:lwjgl-freetype:${lwjgl_version}"
-  implementation "org.lwjgl:lwjgl-harfbuzz:${lwjgl_version}"
-
-  runtimeOnly "org.lwjgl:lwjgl::${lwjglNatives}"
-  runtimeOnly "org.lwjgl:lwjgl-opengl::${lwjglNatives}"
-  runtimeOnly "org.lwjgl:lwjgl-glfw::${lwjglNatives}"
-  runtimeOnly "org.lwjgl:lwjgl-openal::${lwjglNatives}"
-  runtimeOnly "org.lwjgl:lwjgl-shaderc::${lwjglNatives}"
-  runtimeOnly "org.lwjgl:lwjgl-spvc::${lwjglNatives}"
-  runtimeOnly "org.lwjgl:lwjgl-freetype::${lwjglNatives}"
-  runtimeOnly "org.lwjgl:lwjgl-harfbuzz::${lwjglNatives}"
-}
-
-test {
-  useJUnitPlatform()
-  failOnNoDiscoveredTests = false
-}
-
-publishing {
-  publications {
-    maven(MavenPublication) { from components.java }
-  }
-  repositories {
-    maven { name = 'Local'; url = layout.buildDirectory.dir('repo') }
-  }
-}
-
-tasks.register('copyDependencies', Copy) {
-  from(configurations.runtimeClasspath)
-  into(layout.buildDirectory.dir('libs'))
-}
-
-tasks.jar {
-  dependsOn('copyDependencies')
-  manifest {
-    attributes(
-        'Class-Path': configurations.runtimeClasspath.files.collect { it.name }.join(' '),
-        'Main-Class': 'net.fmhi.Main'
-    )
+['build', 'check', 'test', 'clean', 'assemble'].each { name ->
+  tasks.register(name) {
+    group = 'build'
+    description = "Aggregates '$name' across all modules."
+    dependsOn subprojects.collect { "${it.path}:$name" }
   }
 }
