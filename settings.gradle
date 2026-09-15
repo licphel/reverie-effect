@@ -22,26 +22,26 @@
  * SOFTWARE.
  */
 
-rootProject.name = "fmhi"
+rootProject.name = "rf"
 
-// Shared-library versions, declared once here and injected into every
-// subproject from the root build script; modules must not repeat them.
+// momentum engine: a git submodule at modules/momentum, consumed as a Gradle composite
+// build. It is a separate repository — not a regular subproject — so it is
+// excluded from the module scans below.
+includeBuild("modules/momentum")
+includeBuild("modules/launcher")
+
+// Game module at the repository root (Mindustry-style). Tests live in core's
+// own test source set, so there is no separate test module.
+['core'].each { name ->
+  include(name)
+  project(":$name").projectDir = file(name)
+}
+
 dependencyResolutionManagement {
   versionCatalogs {
     libs {
       library('jspecify', 'org.jspecify', 'jspecify').version('1.0.0')
       library('fastutil', 'it.unimi.dsi', 'fastutil').version('8.5.15')
-      library('log4j-api', 'org.apache.logging.log4j', 'log4j-api').version('2.25.4')
-      library('log4j-core', 'org.apache.logging.log4j', 'log4j-core').version('2.25.4')
-      library('jackson-databind', 'com.fasterxml.jackson.core', 'jackson-databind').version('2.21.1')
     }
   }
-}
-
-var modulesDir = file("modules")
-
-modulesDir.listFiles()?.findAll { it.isDirectory() }?.each { dir ->
-  var projectName = "fmhi-${dir.name}"
-  include(projectName)
-  project(":${projectName}").projectDir = dir
 }
