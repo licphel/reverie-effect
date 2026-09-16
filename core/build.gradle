@@ -1,0 +1,118 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2026 Licphel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+plugins {
+  id 'java-library'
+}
+
+java {
+  toolchain { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+dependencies {
+  // momentum engine (composite build in modules/momentum). The core's public API
+  // exposes engine types in its signatures, so these must be `api` for
+  // consumers (:tests) to compile against them.
+  api 'io.viki.momentum:momentum-core'
+  api 'io.viki.momentum:momentum-event'
+  api 'io.viki.momentum:momentum-math'
+  api 'io.viki.momentum:momentum-registry'
+  api 'io.viki.momentum:momentum-mod'
+  api 'io.viki.momentum:momentum-asset'
+  api 'io.viki.momentum:momentum-config'
+  api 'io.viki.momentum:momentum-gfx'
+  api 'io.viki.momentum:momentum-input'
+  api 'io.viki.momentum:momentum-glfw'
+  api 'io.viki.momentum:momentum-opengl'
+  api 'io.viki.momentum:momentum-audio'
+  api 'io.viki.momentum:momentum-openal'
+  api 'io.viki.momentum:momentum-ui'
+  api 'io.viki.momentum:momentum-codec'
+
+  implementation libs.fastutil
+  compileOnly libs.jspecify
+
+  // LWJGL: the engine's backends declare it compileOnly; supply the API jars and
+  // every platform's natives here so the game jar runs anywhere.
+  implementation "org.lwjgl:lwjgl:${lwjgl_version}"
+  implementation "org.lwjgl:lwjgl-opengl:${lwjgl_version}"
+  implementation "org.lwjgl:lwjgl-glfw:${lwjgl_version}"
+  implementation "org.lwjgl:lwjgl-openal:${lwjgl_version}"
+  implementation "org.lwjgl:lwjgl-shaderc:${lwjgl_version}"
+  implementation "org.lwjgl:lwjgl-spvc:${lwjgl_version}"
+  implementation "org.lwjgl:lwjgl-freetype:${lwjgl_version}"
+  implementation "org.lwjgl:lwjgl-harfbuzz:${lwjgl_version}"
+
+  // natives for every supported platform (x64 + arm64 on Windows/Linux/macOS)
+  def lwjglLibs = ["", "-opengl", "-glfw", "-openal", "-shaderc", "-spvc", "-freetype", "-harfbuzz"]
+  def nativeClassifiers = ["windows", "windows-arm64", "linux", "linux-arm64", "macos", "macos-arm64"]
+  lwjglLibs.each { lib ->
+    nativeClassifiers.each { classifier ->
+      runtimeOnly "org.lwjgl:lwjgl${lib}::natives-${classifier}"
+    }
+  }
+
+  implementation platform('io.netty:netty-bom:4.1.118.Final')
+  implementation 'io.netty:netty-handler'
+  implementation 'io.netty:netty-transport'
+
+  // tests (core's test source set) touch the LWJGL bindings directly
+  testImplementation "org.lwjgl:lwjgl-opengl:${lwjgl_version}"   // TestTextureFlip (GL30)
+  testImplementation "org.lwjgl:lwjgl-shaderc:${lwjgl_version}"  // TestHLSLtoGLSL
+  testImplementation "org.lwjgl:lwjgl-spvc:${lwjgl_version}"     // TestHLSLtoGLSL
+
+  testImplementation platform('org.junit:junit-bom:5.10.0')
+  testImplementation 'org.junit.jupiter:junit-jupiter'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+  useJUnitPlatform()
+  failOnNoDiscoveredTests = false
+}
+
+processResources {
+  from(rootProject.file('assets/title.png'))
+}
+
+// Local dev: run the game directly (the published launcher spawns this jar).
+tasks.register('run', JavaExec) {
+  group = 'application'
+  description = 'Runs the game directly.'
+  mainClass = 'io.viki.rf.Main'
+  classpath = sourceSets.main.runtimeClasspath
+  jvmArgs('--enable-native-access=ALL-UNNAMED')
+}
+
+// Runnable game jar (game + engine + all platform natives), launched by the
+// independent launcher in modules/.
+tasks.register('fatJar', Jar) {
+  archiveFileName = 'rf.jar'
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  manifest { attributes 'Main-Class': 'io.viki.rf.Main' }
+  from sourceSets.main.output
+  dependsOn configurations.runtimeClasspath
+  from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+  exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+}

@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Compile, lint and test
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            # headless runner: virtual framebuffer for the OpenGL JUnit test
+            xvfb-run -a ./gradlew build --no-daemon
+          else
+            ./gradlew build --no-daemon
+          fi
+        shell: bash
+      - name: Assemble game + launcher jars
+        run: ./gradlew :core:fatJar :launcher:fatJar --no-daemon
+        shell: bash
