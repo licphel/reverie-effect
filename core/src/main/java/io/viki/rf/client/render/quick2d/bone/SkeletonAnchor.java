@@ -22,11 +22,7 @@
  * SOFTWARE.
  */
 
-<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/quick2d/bone/SkeletonAnchor.java
 package io.viki.rf.client.render.quick2d.bone;
-========
-package io.viki.rf.render.quick2d.bone;
->>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/quick2d/bone/SkeletonAnchor.java
 
 import io.viki.momentum.math.shape.Rectangle;
 import io.viki.momentum.math.Vector2;

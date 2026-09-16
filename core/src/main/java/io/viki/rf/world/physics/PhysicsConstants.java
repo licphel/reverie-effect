@@ -72,7 +72,7 @@ public final class PhysicsConstants {
   /** Mean human body density in kilograms per cubic metre. */
   public static final float PLAYER_DENSITY = 985.0F;
   /** Player walking speed in metres per second. */
-  public static final float PLAYER_WALK_SPEED_METERS_PER_SECOND = 32.0F;
+  public static final float PLAYER_WALK_SPEED_METERS_PER_SECOND = 5.0F;
   /** Player walking speed in tiles per second. */
   public static final float PLAYER_WALK_SPEED =
       Ruler.TILE.fromMeter(PLAYER_WALK_SPEED_METERS_PER_SECOND);

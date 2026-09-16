@@ -22,11 +22,7 @@
  * SOFTWARE.
  */
 
-<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/ambient/AmbientLightComposer.java
 package io.viki.rf.client.render.ambient;
-========
-package io.viki.rf.render.ambient;
->>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ambient/AmbientLightComposer.java
 
 import io.viki.momentum.gfx.texture.TexturePart;
 import io.viki.momentum.gfx.util.impl.BatchedGraphics;

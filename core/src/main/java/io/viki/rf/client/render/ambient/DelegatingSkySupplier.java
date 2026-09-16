@@ -22,11 +22,7 @@
  * SOFTWARE.
  */
 
-<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/ambient/DelegatingSkySupplier.java
 package io.viki.rf.client.render.ambient;
-========
-package io.viki.rf.render.ambient;
->>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ambient/DelegatingSkySupplier.java
 
 import io.viki.rf.world.level.Level;
 import io.viki.rf.world.util.Locatable;
