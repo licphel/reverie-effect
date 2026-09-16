@@ -22,9 +22,15 @@
  * SOFTWARE.
  */
 
+<<<<<<<< HEAD:core/src/main/java/io/viki/rf/world/level/GeneratedEntity.java
 package io.viki.rf.world.level;
 
 import java.util.Map;
+========
+package io.viki.rf.render;
+
+import io.viki.momentum.gfx.mesh.Mesh;
+>>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ChunkMesh.java
 
 /** A generated entity spawn; unlike tile writes its position is fractional. */
 public record GeneratedEntity(double x, double y, int priority, String source,

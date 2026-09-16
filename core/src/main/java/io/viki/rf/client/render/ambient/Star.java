@@ -22,7 +22,11 @@
  * SOFTWARE.
  */
 
+<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/ambient/Star.java
 package io.viki.rf.client.render.ambient;
+========
+package io.viki.rf.render.ambient;
+>>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ambient/Star.java
 
 import io.viki.momentum.gfx.tint.Color;
 import io.viki.momentum.gfx.util.impl.BatchedGraphics;

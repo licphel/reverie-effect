@@ -25,7 +25,11 @@
 package io.viki.rf.network.codec;
 
 import io.netty.buffer.ByteBuf;
+<<<<<<<< HEAD:core/src/main/java/io/viki/rf/network/codec/NettyBinaryBuffer.java
 import io.viki.momentum.codec.streaming.BinaryBuffer;
+========
+import io.viki.momentum.codec.streaming.CursorBuffer;
+>>>>>>>> origin/main:core/src/main/java/io/viki/rf/network/codec/NettyCursorBuffer.java
 import io.viki.momentum.util.InternalApi;
 import org.jspecify.annotations.Nullable;
 

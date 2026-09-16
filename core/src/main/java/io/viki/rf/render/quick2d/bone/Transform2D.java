@@ -22,25 +22,36 @@
  * SOFTWARE.
  */
 
-<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/ambient/AmbientLightComposer.java
-package io.viki.rf.client.render.ambient;
-========
-package io.viki.rf.render.ambient;
->>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ambient/AmbientLightComposer.java
+package io.viki.rf.render.quick2d.bone;
 
-import io.viki.momentum.gfx.texture.TexturePart;
-import io.viki.momentum.gfx.util.impl.BatchedGraphics;
+import io.viki.momentum.math.Matrix3x2;
 
-/** Draws a texture region through the foreground light composition path. */
-@FunctionalInterface
-public interface AmbientLightComposer {
-  /** Draws an ambient image region at the supplied destination rectangle. */
-  void draw(BatchedGraphics graphics, TexturePart image, float x, float y, float width, float height,
-            float u, float v, float sourceWidth, float sourceHeight);
+/** Immutable and thread-safe local translation, rotation, and scale. */
+public record Transform2D(float x, float y, float rotation, float scaleX, float scaleY) {
+  public static final Transform2D IDENTITY = new Transform2D(0.0F, 0.0F, 0.0F, 1.0F, 1.0F);
 
-  /** Returns a direct full-bright composition fallback. */
-  static AmbientLightComposer direct() {
-    return (graphics, image, x, y, width, height, u, v, sourceWidth, sourceHeight) ->
-        graphics.drawTexture(image, x, y, width, height, u, v, sourceWidth, sourceHeight);
+  public Transform2D {
+    if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(rotation)
+        || !Float.isFinite(scaleX) || !Float.isFinite(scaleY)) {
+      throw new IllegalArgumentException("Transform values must be finite: "
+          + x + ", " + y + ", " + rotation + ", " + scaleX + ", " + scaleY);
+    }
+  }
+
+  public static Transform2D at(float x, float y) {
+    return new Transform2D(x, y, 0.0F, 1.0F, 1.0F);
+  }
+
+  public static Transform2D at(float x, float y, float rotation) {
+    return new Transform2D(x, y, rotation, 1.0F, 1.0F);
+  }
+
+  public Matrix3x2 matrix() {
+    float sin = (float) Math.sin(rotation);
+    float cos = (float) Math.cos(rotation);
+    return new Matrix3x2(
+        scaleX * cos, scaleX * sin,
+        -scaleY * sin, scaleY * cos,
+        x, y);
   }
 }

@@ -22,34 +22,38 @@
  * SOFTWARE.
  */
 
-<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/ambient/SkyLayer.java
-package io.viki.rf.client.render.ambient;
-========
-package io.viki.rf.render.ambient;
->>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ambient/SkyLayer.java
+package io.viki.rf.render.quick2d.bone;
 
-import io.viki.momentum.gfx.texture.TexturePart;
-import io.viki.momentum.gfx.util.impl.BatchedGraphics;
-import io.viki.rf.world.level.Level;
-import io.viki.rf.world.util.Locatable;
+import io.viki.momentum.gfx.util.impl.Graphics;
+import io.viki.momentum.math.Matrix3x2;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/** A group of parallax images sharing a sky transition opacity. */
-public final class SkyLayer {
-  private final List<Parallax> parallax = new ArrayList<>();
-
-  public SkyLayer addLayer(TexturePart image, boolean lightImpact, float resist) {
-    parallax.add(new Parallax(image, lightImpact, resist));
-    return this;
+/** Stateless and thread-safe renderer for rigid region attachments. */
+public final class SkeletonRenderer {
+  private SkeletonRenderer() {
   }
 
-  void render(BatchedGraphics graphics, Level level, Locatable position,
-              float width, float height, float opacity,
-              AmbientLightComposer lightComposer) {
-    for (Parallax layer : parallax) {
-      layer.render(graphics, level, position, width, height, opacity, lightComposer);
+  public static void draw(
+      Graphics graphics, Skeleton2D skeleton, SkeletonTransform transform) {
+    skeleton.updateWorldTransforms();
+    SkeletonDefinition definition = skeleton.definition();
+    Matrix3x2 root = transform.matrix(definition.localAnchor());
+
+    for (int i = 0; i < skeleton.slotCount(); i++) {
+      Slot slot = skeleton.slot(i);
+      RegionAttachment attachment = slot.attachment();
+      if (attachment == null) {
+        continue;
+      }
+      Matrix3x2 matrix = root
+          .multiply(skeleton.worldTransform(slot.boneIndex()))
+          .multiply(attachment.localMatrix());
+      graphics.transform().push(matrix.toMatrix4x4());
+      try {
+        graphics.drawTexture(
+            attachment.texture(), 0.0F, 0.0F, attachment.width(), attachment.height());
+      } finally {
+        graphics.transform().pop();
+      }
     }
   }
 }

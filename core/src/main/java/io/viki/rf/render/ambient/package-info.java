@@ -22,25 +22,10 @@
  * SOFTWARE.
  */
 
-<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/ambient/AmbientLightComposer.java
-package io.viki.rf.client.render.ambient;
-========
+@SideOnly(dist = Dist.CLIENT)
+@NullMarked
 package io.viki.rf.render.ambient;
->>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ambient/AmbientLightComposer.java
 
-import io.viki.momentum.gfx.texture.TexturePart;
-import io.viki.momentum.gfx.util.impl.BatchedGraphics;
-
-/** Draws a texture region through the foreground light composition path. */
-@FunctionalInterface
-public interface AmbientLightComposer {
-  /** Draws an ambient image region at the supplied destination rectangle. */
-  void draw(BatchedGraphics graphics, TexturePart image, float x, float y, float width, float height,
-            float u, float v, float sourceWidth, float sourceHeight);
-
-  /** Returns a direct full-bright composition fallback. */
-  static AmbientLightComposer direct() {
-    return (graphics, image, x, y, width, height, u, v, sourceWidth, sourceHeight) ->
-        graphics.drawTexture(image, x, y, width, height, u, v, sourceWidth, sourceHeight);
-  }
-}
+import io.viki.rf.annotation.Dist;
+import io.viki.rf.annotation.SideOnly;
+import org.jspecify.annotations.NullMarked;

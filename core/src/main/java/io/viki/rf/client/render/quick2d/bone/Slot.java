@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+<<<<<<<< HEAD:core/src/main/java/io/viki/rf/client/render/quick2d/bone/Slot.java
 package io.viki.rf.client.render.quick2d.bone;
 
 import org.jspecify.annotations.Nullable;
@@ -62,5 +63,35 @@ public final class Slot {
 
   int boneIndex() {
     return definition.boneIndex();
+========
+package io.viki.rf.render.ambient;
+
+import io.viki.rf.world.level.Level;
+import io.viki.rf.world.util.Locatable;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
+
+/** Resolves the sky used for a level and render position. */
+@FunctionalInterface
+public interface SkySupplier {
+  /** Returns a supplier that never handles an input. */
+  static SkySupplier none() {
+    return (level, position) -> null;
+  }
+
+  /** Returns a supplier that always returns the given sky. */
+  static SkySupplier constant(Sky sky) {
+    Objects.requireNonNull(sky, "sky");
+    return (level, position) -> sky;
+  }
+
+  /** Returns a sky, or {@code null} when this supplier does not match. */
+  @Nullable Sky get(Level level, Locatable position);
+
+  /** Appends a fallback supplier after this supplier. */
+  default SkySupplier or(SkySupplier fallback) {
+    return new DelegatingSkySupplier(this, fallback);
+>>>>>>>> origin/main:core/src/main/java/io/viki/rf/render/ambient/SkySupplier.java
   }
 }
